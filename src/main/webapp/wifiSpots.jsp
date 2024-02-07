@@ -1,4 +1,5 @@
 <%@ page import="java.util.*"%>
+<%@ page import="com.example.seoulwifiexplorer.WifiSpot" %>
 <%@ page contentType="text/htmll; charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -30,9 +31,9 @@
             </thead>
             <tbody>
                 <% List<WifiSpot> wifiSpotList = (List<WifiSpot>) request.getAttribute("wifiSpot");
-                    for (WifiSpot wifiSpot : wifiSpotList) { %>
+                    for (WifiSpot spot : wifiSpotList) { %>
                 <tr>
-                    <td><%= spot.getDistance() %></td>
+                    <td><%= spot.getDistanceKm() %></td>
                     <td><%= spot.getManagementNumber() %></td>
                     <td><%= spot.getWardOffice()%></td>
                     <td><%= spot.getWifiName()%></td>
