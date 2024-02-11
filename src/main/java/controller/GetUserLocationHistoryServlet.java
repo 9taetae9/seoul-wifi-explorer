@@ -15,7 +15,6 @@ public class GetUserLocationHistoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         List<UserHistory> history = new UserHistoryDAO().getUserLocationHistory();
 
-        // Convert history to JSON
         String json = new Gson().toJson(history);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
