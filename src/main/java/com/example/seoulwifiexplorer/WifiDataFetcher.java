@@ -113,7 +113,7 @@ public class WifiDataFetcher {
 
 
     public int fetchAndStoreWifiSpots(int totalCount) throws IOException {
-        int totalFetched = 0;
+        List<WifiSpot> allNewWifiSpots = new ArrayList<>();
         int totalPages = (totalCount / PAGE_SIZE) + (totalCount % PAGE_SIZE > 0 ? 1 : 0);
 
         for (int currentPage = 1; currentPage <= totalPages; currentPage++) {
@@ -122,10 +122,30 @@ public class WifiDataFetcher {
             endIdx = Math.min(endIdx, totalCount);
 
             List<WifiSpot> wifiSpots = fetchWifiSpots(startIdx, endIdx);
-            insertWifiSpotsIntoDB(wifiSpots);
-            totalFetched += wifiSpots.size();
+            if (wifiSpots.isEmpty()) {
+                return 0;
+            }
+            allNewWifiSpots.addAll(wifiSpots);
         }
 
-        return totalFetched;
+        if (!allNewWifiSpots.isEmpty()) {
+            clearExistingWifiSpots();
+        }
+
+
+        insertWifiSpotsIntoDB(allNewWifiSpots);
+
+        return allNewWifiSpots.size();
+    }
+
+    public void clearExistingWifiSpots() {
+        String sql = "DELETE FROM WifiSpot";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
