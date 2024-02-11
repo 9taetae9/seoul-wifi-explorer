@@ -13,7 +13,7 @@ public class DatabaseUtil {
             e.printStackTrace();
         }
     }
-    private static final String JDBC_URL = "jdbc:sqlite:/Users/taehyounkim/seoul_wifi.db";
+    private static final String JDBC_URL = "jdbc:sqlite:/Users/taehyounkim/seoul-wifi-explorer/databases/seoul_wifi.db";
 
     public static Connection getConnection() throws SQLException{
         return DriverManager.getConnection(JDBC_URL);
