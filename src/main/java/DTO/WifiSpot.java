@@ -28,7 +28,7 @@ public class WifiSpot {
 
     public WifiSpot(String managementNumber, String wardOffice, String wifiName, String addressStreet, String addressDetail,
                     String installationFloor, String installationType, String installationAgency, String serviceType,
-                    String networkType, int constructionYear, String indoorOutdoor, String remarks, double latitude,
+                    String networkType, int constructionYear, String indoorOutdoor, String connectionEnvironment, double latitude,
                     double longitude, String workDate) {
         this.managementNumber = managementNumber;
         this.wardOffice = wardOffice;
@@ -42,7 +42,7 @@ public class WifiSpot {
         this.networkType = networkType;
         this.constructionYear = constructionYear;
         this.indoorOutdoor = indoorOutdoor;
-        this.remarks = remarks;
+        this.remarks = connectionEnvironment;
         this.latitude = latitude;
         this.longitude = longitude;
         this.workDate = workDate;
