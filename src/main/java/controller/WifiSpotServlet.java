@@ -1,7 +1,9 @@
-package com.example.seoulwifiexplorer;
+package controller;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
+import DTO.WifiSpot;
+import com.example.seoulwifiexplorer.DatabaseUtil;
+import com.google.gson.Gson;
+
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +16,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "WifiSpotServlet", urlPatterns = {"/wifispot"})
+@WebServlet(name = "WifiSpotServlet", urlPatterns = {"/wifiSpots"})
 public class WifiSpotServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         double userLat, userLng;
         try {
@@ -28,16 +30,15 @@ public class WifiSpotServlet extends HttpServlet {
             return;
         }
 
-
-        //list to hold wifi spots
+        // 가까운 와이파이 지점 정보를 담을 리스트
         List<WifiSpot> wifiSpotsList = new ArrayList<>();
 
-        // Query the database for nearest wifi spots
-        String query = "SELECT *, (6371 * acos(cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) + sin(radians(?)) * sin(radians(lat)))) AS distance_km FROM WifiSpot ORDER BY distance_km ASC LIMIT 20";
+        // 20개 이내의 가까운 와이파이 지점 정보 가져오기
+        String query = "SELECT *, round(6371*acos(cos(radians(?))*cos(radians(latitude))*cos(radians(longitude) -radians(?)) + sin(radians(?))*sin(radians(latitude))), 4) AS distance FROM WifiSpot ORDER BY distance LIMIT 20";
 
-        // perform the SQL query using the DatabaseUtil class
+        // DB에서 가까운 와이파이 지점 정보 가져오기
         try (Connection conn = DatabaseUtil.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setDouble(1, userLat);
             pstmt.setDouble(2, userLng);
@@ -45,8 +46,9 @@ public class WifiSpotServlet extends HttpServlet {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    double distance = rs.getDouble("distance"); // 사용자와의 거리
                     WifiSpot spot = new WifiSpot(
-                            rs.getInt("id"),
+                            distance,
                             rs.getString("management_number"),
                             rs.getString("ward_office"),
                             rs.getString("wifi_name"),
@@ -54,6 +56,7 @@ public class WifiSpotServlet extends HttpServlet {
                             rs.getString("address_detail"),
                             rs.getString("installation_floor"),
                             rs.getString("installation_type"),
+                            rs.getString("installation_agency"),
                             rs.getString("service_type"),
                             rs.getString("network_type"),
                             rs.getInt("construction_year"),
@@ -61,8 +64,7 @@ public class WifiSpotServlet extends HttpServlet {
                             rs.getString("remarks"),
                             rs.getDouble("latitude"),
                             rs.getDouble("longitude"),
-                            rs.getString("work_date"),
-                            rs.getDouble("distance_km")
+                            rs.getString("work_date")
                     );
                     wifiSpotsList.add(spot);
                 }
@@ -73,10 +75,13 @@ public class WifiSpotServlet extends HttpServlet {
             return;
         }
 
-
-        //Foward the results to the JSP page
-        request.setAttribute("wifiSpots", wifiSpotsList);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("wifispot.jsp");
-        dispatcher.forward(request, response);
+        if (!wifiSpotsList.isEmpty()) {
+            //wifiSpotsList Gson -> JSON
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(new Gson().toJson(wifiSpotsList));
+        } else {
+            response.getWriter().write("[]");
+        }
     }
 }
